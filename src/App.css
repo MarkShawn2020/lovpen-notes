@@ -17,29 +17,60 @@ body {
 }
 
 .app-header {
-  padding: 15px 20px;
+  padding: 12px 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .app-header h1 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
 }
 
+.view-modes {
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,0.2);
+  padding: 2px;
+  border-radius: 6px;
+}
+
+.view-modes button {
+  padding: 4px 12px;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.8);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.view-modes button:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.view-modes button.active {
+  background: white;
+  color: #667eea;
+}
+
 .notes-history {
-  flex: 1;
-  padding: 20px;
+  height: 200px;
+  padding: 15px;
   overflow-y: auto;
   background: #fafafa;
-  min-height: 200px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .notes-history h2 {
-  font-size: 14px;
+  font-size: 12px;
   color: #666;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -47,78 +78,268 @@ body {
 .notes-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .empty-state {
   text-align: center;
   color: #999;
   font-style: italic;
-  padding: 40px 20px;
+  padding: 30px 20px;
+  font-size: 13px;
 }
 
 .note-item {
   background: white;
-  padding: 12px 15px;
-  border-radius: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
+  transition: all 0.2s;
+  position: relative;
 }
 
 .note-item:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.note-time {
-  font-size: 11px;
-  color: #999;
-  margin-bottom: 5px;
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
 }
 
-.note-text {
-  font-size: 14px;
+.note-title {
+  font-size: 13px;
+  font-weight: 600;
   color: #333;
-  line-height: 1.5;
+}
+
+.note-time {
+  font-size: 10px;
+  color: #999;
+}
+
+.note-preview {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.note-tags {
+  display: flex;
+  gap: 4px;
+}
+
+.tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: #e8f4f8;
+  color: #4a90e2;
+  border-radius: 3px;
+}
+
+.resume-btn {
+  padding: 2px 8px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.resume-btn:hover {
+  background: #45a049;
 }
 
 .editor-section {
-  padding: 20px;
+  flex: 1;
+  padding: 15px;
   background: white;
-  border-top: 1px solid #e0e0e0;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-container {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.editor-container.view-edit .editor-pane {
+  width: 100%;
+}
+
+.editor-container.view-edit .preview-pane {
+  display: none;
+}
+
+.editor-container.view-preview .editor-pane {
+  display: none;
+}
+
+.editor-container.view-preview .preview-pane {
+  width: 100%;
+}
+
+.editor-container.view-split .editor-pane,
+.editor-container.view-split .preview-pane {
+  width: 50%;
+}
+
+.editor-pane,
+.preview-pane {
+  overflow: auto;
 }
 
 .note-input {
   width: 100%;
-  min-height: 120px;
+  height: 100%;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  resize: none;
   outline: none;
   transition: border-color 0.3s;
+  background: #fafafa;
 }
 
 .note-input:focus {
   border-color: #667eea;
+  background: white;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+.preview-pane {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  background: white;
+}
+
+.markdown-preview {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.preview-empty {
+  color: #999;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Markdown styles */
+.markdown-preview h1 {
+  font-size: 20px;
+  margin: 0 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.markdown-preview h2 {
+  font-size: 16px;
+  margin: 10px 0 8px 0;
+}
+
+.markdown-preview h3 {
+  font-size: 14px;
+  margin: 8px 0 6px 0;
+}
+
+.markdown-preview p {
+  margin: 0 0 10px 0;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  margin: 0 0 10px 0;
+  padding-left: 20px;
+}
+
+.markdown-preview li {
+  margin: 3px 0;
+}
+
+.markdown-preview code {
+  background: #f5f5f5;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+}
+
+.markdown-preview pre {
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 0 0 10px 0;
+}
+
+.markdown-preview pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.markdown-preview blockquote {
+  border-left: 3px solid #667eea;
+  padding-left: 10px;
+  margin: 0 0 10px 0;
+  color: #666;
+}
+
+.markdown-preview a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.markdown-preview a:hover {
+  text-decoration: underline;
+}
+
+.markdown-preview strong {
+  font-weight: 600;
+}
+
+.markdown-preview em {
+  font-style: italic;
+}
+
+.markdown-preview hr {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 15px 0;
+}
+
 .submit-btn {
-  margin-top: 12px;
   padding: 10px 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s;
-  width: 100%;
 }
 
 .submit-btn:hover:not(:disabled) {
@@ -131,9 +352,10 @@ body {
   cursor: not-allowed;
 }
 
-/* 确保滚动条样式 */
+/* Scrollbar styles */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -141,10 +363,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+  background: #bbb;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #888;
 }
