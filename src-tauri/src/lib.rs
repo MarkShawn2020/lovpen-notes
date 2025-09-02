@@ -4,6 +4,9 @@ use tauri::{Emitter, Manager, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
 use uuid::Uuid;
 
+mod note_store;
+use note_store::{store_temp_note, get_temp_note, remove_temp_note, get_all_temp_notes, clear_temp_notes};
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Note {
     id: String,
@@ -89,6 +92,33 @@ async fn generate_title_and_tags(_content: String) -> Result<(String, Vec<String
     Ok(("Untitled Note".to_string(), vec!["general".to_string()]))
 }
 
+#[tauri::command]
+async fn open_devtools(window: tauri::WebviewWindow) -> Result<(), String> {
+    #[cfg(debug_assertions)]
+    {
+        window.open_devtools();
+        Ok(())
+    }
+    
+    #[cfg(not(debug_assertions))]
+    {
+        Err("Developer tools are only available in debug builds".to_string())
+    }
+}
+
+#[tauri::command]
+async fn broadcast_note_update(app: tauri::AppHandle, note: note_store::TempNote) -> Result<(), String> {
+    // Emit specifically to the main window
+    if let Some(main_window) = app.get_webview_window("main") {
+        main_window.emit("global-note-updated", &note).map_err(|e| e.to_string())?;
+        println!("Emitted note update to main window: {}", note.id);
+    } else {
+        println!("Main window not found, broadcasting to all windows");
+        app.emit("global-note-updated", &note).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -103,6 +133,13 @@ pub fn run() {
             branch_note,
             get_note_history,
             generate_title_and_tags,
+            store_temp_note,
+            get_temp_note,
+            remove_temp_note,
+            get_all_temp_notes,
+            clear_temp_notes,
+            open_devtools,
+            broadcast_note_update,
         ])
         .setup(|app| {
             // Register global shortcut for Cmd+N
