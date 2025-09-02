@@ -103,6 +103,35 @@ body {
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
+.note-item.resuming {
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8ecff 100%);
+  border: 2px solid #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  animation: pulse 2s infinite;
+}
+
+.note-item.pinned {
+  background: linear-gradient(135deg, #fff8f0 0%, #fff3e0 100%);
+  border-left: 3px solid #667eea;
+  order: -1;
+}
+
+.note-item.favorite {
+  background: linear-gradient(135deg, #fffef7 0%, #fffcf0 100%);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(102, 126, 234, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+  }
+}
+
 .note-header {
   display: flex;
   justify-content: space-between;
@@ -113,6 +142,23 @@ body {
   font-size: 13px;
   font-weight: 600;
   color: #333;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-inline {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.icon-inline.pinned {
+  color: #667eea;
+}
+
+.icon-inline.favorited {
+  color: #ffc107;
+  fill: #ffc107;
 }
 
 .note-time {
@@ -134,6 +180,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 
 .note-tags {
@@ -149,19 +196,98 @@ body {
   border-radius: 3px;
 }
 
-.resume-btn {
-  padding: 2px 8px;
-  background: #4CAF50;
-  color: white;
-  border: none;
+.note-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.action-btn {
+  padding: 4px;
+  background: transparent;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
-  font-size: 11px;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.action-btn svg {
+  stroke-width: 2;
+}
+
+.pin-btn {
+  color: #9e9e9e;
+}
+
+.pin-btn:hover {
+  color: #667eea;
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.pin-btn.active {
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  border-color: #667eea;
+}
+
+.favorite-btn {
+  color: #9e9e9e;
+}
+
+.favorite-btn:hover {
+  color: #ffc107;
+  border-color: #ffc107;
+  background: rgba(255, 193, 7, 0.05);
+}
+
+.favorite-btn.active {
+  color: #ffc107;
+  background: rgba(255, 193, 7, 0.1);
+  border-color: #ffc107;
+}
+
+.favorite-btn.active svg {
+  fill: #ffc107;
+}
+
+.delete-btn {
+  color: #9e9e9e;
+}
+
+.delete-btn:hover {
+  color: #f44336;
+  border-color: #f44336;
+  background: rgba(244, 67, 54, 0.05);
+}
+
+.resume-btn {
+  color: #4CAF50;
+  border-color: #4CAF50;
 }
 
 .resume-btn:hover {
-  background: #45a049;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.resume-btn.cancel {
+  color: #f44336;
+  border-color: #f44336;
+}
+
+.resume-btn.cancel:hover {
+  background: rgba(244, 67, 54, 0.1);
+  transform: rotate(90deg);
 }
 
 .editor-section {
