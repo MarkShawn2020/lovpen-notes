@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { emit, listen } from '@tauri-apps/api/event';
+import FinalWysiwygEditor from './components/FinalWysiwygEditor';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { invoke } from '@tauri-apps/api/core';
 import './App.css';
@@ -19,7 +19,7 @@ interface Note {
 function EditorWindow() {
   const [note, setNote] = useState<Note | null>(null);
   const [content, setContent] = useState('');
-  const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'split'>('split');
+  const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'split' | 'wysiwyg'>('split');
 
   useEffect(() => {
     // 获取URL参数中的noteId
@@ -144,47 +144,73 @@ function EditorWindow() {
           >
             Preview
           </button>
+          <button 
+            className={viewMode === 'wysiwyg' ? 'active' : ''}
+            onClick={() => setViewMode('wysiwyg')}
+          >
+            WYSIWYG
+          </button>
         </div>
       </div>
       
       <div className="editor-section" style={{ marginTop: '0' }}>
-        <div className={`editor-container view-${viewMode}`}>
-          {(viewMode === 'edit' || viewMode === 'split') && (
-            <div className="editor-pane">
-              <textarea
-                className="note-input"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Edit your note in Markdown..."
-                onKeyDown={(e) => {
-                  if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
-                    e.preventDefault();
-                    handleSave();
-                  }
-                  if (e.key === 'w' && (e.metaKey || e.ctrlKey)) {
-                    e.preventDefault();
-                    handleClose();
-                  }
-                }}
-                autoFocus
-              />
-            </div>
-          )}
-          
-          {(viewMode === 'preview' || viewMode === 'split') && (
-            <div className="preview-pane">
-              <div className="markdown-preview">
-                {content ? (
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {content}
-                  </ReactMarkdown>
-                ) : (
-                  <p className="preview-empty">Preview will appear here...</p>
-                )}
+        {viewMode === 'wysiwyg' ? (
+          <div className="wysiwyg-container" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <FinalWysiwygEditor
+              value={content}
+              onChange={setContent}
+              placeholder="Edit your note..."
+              onKeyDown={(e) => {
+                if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  handleSave();
+                }
+                if (e.key === 'w' && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  handleClose();
+                }
+              }}
+            />
+          </div>
+        ) : (
+          <div className={`editor-container view-${viewMode}`}>
+            {(viewMode === 'edit' || viewMode === 'split') && (
+              <div className="editor-pane">
+                <textarea
+                  className="note-input"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Edit your note in Markdown..."
+                  onKeyDown={(e) => {
+                    if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
+                      e.preventDefault();
+                      handleSave();
+                    }
+                    if (e.key === 'w' && (e.metaKey || e.ctrlKey)) {
+                      e.preventDefault();
+                      handleClose();
+                    }
+                  }}
+                  autoFocus
+                />
               </div>
-            </div>
-          )}
-        </div>
+            )}
+            
+            {(viewMode === 'preview' || viewMode === 'split') && (
+              <div className="preview-pane">
+                <div className="markdown-preview">
+                  {content ? (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {content}
+                    </ReactMarkdown>
+                  ) : (
+                    <p className="preview-empty">Preview will appear here...</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         
         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
           <button 

@@ -496,3 +496,18 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #888;
 }
+
+/* WYSIWYG Container */
+.wysiwyg-container {
+  height: 100%;
+  overflow: auto;
+}
+
+.wysiwyg-container .editor-pane {
+  height: 100%;
+}
+
+.wysiwyg-container .note-input {
+  height: 100%;
+  width: 100%;
+}
