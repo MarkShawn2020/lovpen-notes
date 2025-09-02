@@ -1,0 +1,56 @@
+.editor-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.note-editor .w-md-editor {
+  background: transparent !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  min-height: 200px;
+}
+
+.note-editor .w-md-editor-text-pre,
+.note-editor .w-md-editor-text-input,
+.note-editor .w-md-editor-text {
+  background: white !important;
+  padding: 12px !important;
+  color: #333 !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+.submit-button {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #4CAF50;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  transition: all 0.3s;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #45a049;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.submit-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.submit-button svg {
+  transform: rotate(-45deg);
+}

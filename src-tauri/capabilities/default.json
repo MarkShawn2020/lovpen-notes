@@ -5,6 +5,26 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "core:window:allow-is-visible",
+    "core:event:allow-listen",
+    "core:event:allow-emit",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister",
+    "global-shortcut:allow-is-registered",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-delete",
+    "store:allow-clear",
+    "store:allow-reset",
+    "store:allow-keys",
+    "store:allow-values",
+    "store:allow-entries",
+    "store:allow-length",
+    "store:allow-load",
+    "store:allow-save",
     "opener:default"
   ]
 }
