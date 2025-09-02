@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { invoke } from '@tauri-apps/api/core';
@@ -17,6 +17,7 @@ function App() {
   const [content, setContent] = useState('');
   const [notes, setNotes] = useState<Note[]>([]);
   const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'split'>('split');
+  const notesListRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // 监听窗口切换事件
@@ -28,6 +29,16 @@ function App() {
       unlisten.then(fn => fn());
     };
   }, []);
+
+  // 当笔记更新时，滚动到底部
+  useEffect(() => {
+    if (notesListRef.current) {
+      const container = notesListRef.current.parentElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+  }, [notes]);
 
   const handleSubmit = async () => {
     if (content.trim()) {
@@ -44,7 +55,7 @@ function App() {
         tags
       };
       
-      setNotes([newNote, ...notes]);
+      setNotes([...notes, newNote]);
       setContent('');
       
       // 尝试调用后端生成标题
@@ -54,7 +65,7 @@ function App() {
         });
         newNote.title = generatedTitle;
         newNote.tags = generatedTags;
-        setNotes(prev => [newNote, ...prev.slice(1)]);
+        setNotes(prev => [...prev.slice(0, -1), newNote]);
       } catch (error) {
         console.log('Using local title generation');
       }
@@ -94,7 +105,7 @@ function App() {
       
       <div className="notes-history">
         <h2>Recent Notes ({notes.length})</h2>
-        <div className="notes-list">
+        <div className="notes-list" ref={notesListRef}>
           {notes.length === 0 ? (
             <p className="empty-state">No notes yet. Start writing below!</p>
           ) : (
