@@ -44,13 +44,13 @@ export default function RenderingWysiwygEditor({
   }, [editor, onChange]);
 
   return (
-    <div className="h-full w-full flex flex-col p-4 bg-gray-500">
+    <div className="h-full w-full flex flex-col p-4">
       <Plate editor={editor}>
-          <EditorContainer className="h-full w-full flex flex-col flex-1 bg-cyan-500">
+          <EditorContainer className="h-full w-full flex flex-col flex-1">
             <Editor 
               placeholder={placeholder}
               variant="none"
-              className="h-full w-full flex-1 px-4 py-4 outline-none bg-cyan-200"
+              className="h-full w-full flex-1 px-4 py-4 outline-none"
             />
           </EditorContainer>
       </Plate>
