@@ -437,15 +437,9 @@ function App() {
       <div className="editor-section">
 
           <RenderingWysiwygEditor
-          // value={content}
-          // onChange={setContent}
-          // placeholder="Start writing your note..."
-          //   onKeyDown={(e) => {
-          //     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-          //       e.preventDefault();
-          //       handleSubmit();
-          //     }
-          //   }}
+            initialContent={content}
+            onChange={setContent}
+            placeholder="Start writing your note..."
           />
 
 
