@@ -1,5 +1,7 @@
 @tailwind base;
 
+@plugin "tailwind-scrollbar-hide";
+
 @custom-variant dark (&:is(.dark *));
 @tailwind components;
 @tailwind utilities;

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import FinalWysiwygEditor from './components/FinalWysiwygEditor';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { invoke } from '@tauri-apps/api/core';
 import './App.css';
@@ -156,21 +155,7 @@ function EditorWindow() {
       <div className="editor-section" style={{ marginTop: '0' }}>
         {viewMode === 'wysiwyg' ? (
           <div className="wysiwyg-container" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <FinalWysiwygEditor
-              value={content}
-              onChange={setContent}
-              placeholder="Edit your note..."
-              onKeyDown={(e) => {
-                if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
-                  e.preventDefault();
-                  handleSave();
-                }
-                if (e.key === 'w' && (e.metaKey || e.ctrlKey)) {
-                  e.preventDefault();
-                  handleClose();
-                }
-              }}
-            />
+            TODO
           </div>
         ) : (
           <div className={`editor-container view-${viewMode}`}>

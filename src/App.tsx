@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import FinalWysiwygEditor from './components/FinalWysiwygEditor';
+import RenderingWysiwygEditor from './components/RenderingWysiwygEditor';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { WebviewWindow, getAllWebviewWindows } from '@tauri-apps/api/webviewWindow';
@@ -421,16 +421,16 @@ function App() {
       <div className="editor-section">
         {viewMode === 'wysiwyg' ? (
           <div className="wysiwyg-container" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <FinalWysiwygEditor
-              value={content}
-              onChange={setContent}
-              placeholder="Start writing your note..."
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                    e.preventDefault();
-                    handleSubmit();
-                  }
-                }}
+            <RenderingWysiwygEditor
+              // value={content}
+              // onChange={setContent}
+              // placeholder="Start writing your note..."
+              //   onKeyDown={(e) => {
+              //     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+              //       e.preventDefault();
+              //       handleSubmit();
+              //     }
+              //   }}
               />
           </div>
         ) : (
