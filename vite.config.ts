@@ -2,13 +2,20 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import path from "path";
+import { codeInspectorPlugin } from "code-inspector-plugin";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-  plugins: [react()],
+  plugins: [
+    // Code inspector must be placed before @vitejs/plugin-react
+    process.env.NODE_ENV !== 'production' && codeInspectorPlugin({
+      bundler: 'vite',
+    }),
+    react(),
+  ].filter(Boolean),
   
   resolve: {
     alias: {

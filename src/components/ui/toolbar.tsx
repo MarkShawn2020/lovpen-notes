@@ -16,13 +16,22 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
+interface ToolbarProps extends React.ComponentProps<typeof ToolbarPrimitive.Root> {
+  wrap?: boolean;
+}
+
 export function Toolbar({
   className,
+  wrap = false,
   ...props
-}: React.ComponentProps<typeof ToolbarPrimitive.Root>) {
+}: ToolbarProps) {
   return (
     <ToolbarPrimitive.Root
-      className={cn('relative flex items-center select-none', className)}
+      className={cn(
+        'relative flex items-center select-none',
+        wrap && 'flex-wrap gap-y-2',
+        className
+      )}
       {...props}
     />
   );

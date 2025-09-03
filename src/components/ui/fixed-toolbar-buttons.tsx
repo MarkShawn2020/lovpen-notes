@@ -17,6 +17,8 @@ import {
 import { KEYS } from 'platejs';
 import { useEditorReadOnly } from 'platejs/react';
 
+import { cn } from '@/lib/utils';
+
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignToolbarButton } from './align-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
@@ -47,11 +49,15 @@ import { ToggleToolbarButton } from './toggle-toolbar-button';
 import { ToolbarGroup } from './toolbar';
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
 
-export function FixedToolbarButtons() {
+interface FixedToolbarButtonsProps {
+  wrap?: boolean;
+}
+
+export function FixedToolbarButtons({ wrap = false }: FixedToolbarButtonsProps) {
   const readOnly = useEditorReadOnly();
 
   return (
-    <div className="flex w-full">
+    <div className={cn("flex w-full", wrap && "flex-wrap")}>
       {!readOnly && (
         <>
           <ToolbarGroup>

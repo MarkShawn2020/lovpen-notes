@@ -292,7 +292,7 @@ body {
 
 .editor-section {
   flex: 1;
-  padding: 15px;
+  /* padding: 15px; */
   background: white;
   display: flex;
   flex-direction: column;
@@ -457,6 +457,7 @@ body {
 }
 
 .submit-btn {
+  margin: 10px 20px;
   padding: 10px 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -497,10 +498,22 @@ body {
   background: #888;
 }
 
+/* Editor Wrapper - occupies remaining space in editor-section */
+.editor-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 /* WYSIWYG Container */
 .wysiwyg-container {
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .wysiwyg-container .editor-pane {
@@ -510,4 +523,22 @@ body {
 .wysiwyg-container .note-input {
   height: 100%;
   width: 100%;
+}
+
+/* 确保编辑器有实质的可点击区域 */
+.wysiwyg-container [data-slate-editor="true"] {
+  padding-bottom: 50vh !important; /* 大幅底部填充创建可点击区域 */
+  min-height: 400px !important; /* 最小高度保证 */
+  cursor: text !important;
+  box-sizing: border-box !important;
+}
+
+/* 提供视觉反馈 */
+.wysiwyg-container [data-slate-editor="true"]:hover {
+  background-color: rgba(0, 0, 0, 0.01) !important;
+}
+
+.wysiwyg-container [data-slate-editor="true"]:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.2) !important;
+  outline-offset: -2px !important;
 }

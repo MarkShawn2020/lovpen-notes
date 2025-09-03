@@ -61,6 +61,15 @@ cd src-tauri && cargo test
 - **tauri.conf.json**: Defines app identifier, window settings, and build configuration
 - **vite.config.ts**: Frontend build configuration
 
+## Development Tools
+
+### Code Inspector
+The project includes `code-inspector-plugin` for enhanced debugging experience:
+- **Purpose**: Click DOM elements in the browser to automatically open the IDE at the exact source code location
+- **Activation**: Press `Option + Shift` (Mac) or `Alt + Shift` (Windows) then click any element
+- **Configuration**: Located in `vite.config.ts`, enabled only in development mode
+- **Supported Editors**: VSCode, Cursor, Windsurf, WebStorm, and others
+
 ## Development Notes
 - The app identifier is `dev.neurora.lovpen-notes`
 - Default window size is 800x600

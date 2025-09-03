@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { invoke } from '@tauri-apps/api/core';
 import './App.css';
+import RenderingWysiwygEditor from './components/RenderingWysiwygEditor';
 
 interface Note {
   id: string;
@@ -154,8 +155,12 @@ function EditorWindow() {
       
       <div className="editor-section" style={{ marginTop: '0' }}>
         {viewMode === 'wysiwyg' ? (
-          <div className="wysiwyg-container" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            TODO
+          <div className="wysiwyg-container">
+            <RenderingWysiwygEditor 
+              initialContent={content}
+              onChange={setContent}
+              placeholder="Type your amazing content here..."
+            />
           </div>
         ) : (
           <div className={`editor-container view-${viewMode}`}>
