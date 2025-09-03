@@ -1,13 +1,21 @@
-import { Toaster } from 'sonner';
 
-import { PlateEditor } from '@/components/editor/plate-editor';
+
+import { EditorKit } from '@/components/editor/editor-kit';
+import { Editor, EditorContainer } from '@/components/ui/editor';
+import { Plate, usePlateEditor } from 'platejs/react';
+
 
 export default function Page() {
-  return (
-    <div className="h-full w-full">
-      <PlateEditor />
+    const editor = usePlateEditor({
+    plugins: EditorKit,
 
-      <Toaster />
-    </div>
+  });
+
+  return (
+    <Plate editor={editor}>      {/* Provides editor context */}
+      <EditorContainer>         {/* Styles the editor area */}
+        <Editor placeholder="Type your amazing content here..." />
+      </EditorContainer>
+    </Plate>
   );
 }

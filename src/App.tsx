@@ -420,7 +420,6 @@ function App() {
       
       <div className="editor-section">
         {viewMode === 'wysiwyg' ? (
-          <div className="wysiwyg-container" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <RenderingWysiwygEditor
               // value={content}
               // onChange={setContent}
@@ -432,7 +431,6 @@ function App() {
               //     }
               //   }}
               />
-          </div>
         ) : (
           <div className={`editor-container view-${viewMode}`}>
             {(viewMode === 'edit' || viewMode === 'split') && (

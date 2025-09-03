@@ -4,7 +4,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { convertToCoreMessages, streamText } from 'ai';
 import { NextResponse } from 'next/server';
 
-import { markdownJoinerTransform } from '@/components/markdown-joiner-transform';
+import { markdownJoinerTransform } from '@/lib/markdown-joiner-transform';
 
 export async function POST(req: NextRequest) {
   const { apiKey: key, messages, system } = await req.json();
