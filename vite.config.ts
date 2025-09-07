@@ -12,7 +12,7 @@ export default defineConfig(async () => ({
   plugins: [
     // Code inspector must be placed before @vitejs/plugin-react
     process.env.NODE_ENV !== 'production' && codeInspectorPlugin({
-//      bundler: 'vite',
+      bundler: 'vite',
     }),
     react(),
   ].filter(Boolean),

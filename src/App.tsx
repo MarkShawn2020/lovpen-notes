@@ -5,6 +5,7 @@ import {
   getAllWebviewWindows,
 } from "@tauri-apps/api/webviewWindow";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
+import confetti from "canvas-confetti";
 import { Clock, Pin, Play, Send, Star, Trash2, X } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
@@ -244,6 +245,19 @@ function App() {
 
       setNotes([...updatedNotes, newNote]);
       setContent("");
+
+      // 触发confetti动画
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#ff3366', '#ff66cc', '#ff99dd', '#9966ff', '#6699ff'],
+        ticks: 200,
+        gravity: 1.2,
+        scalar: 1.2,
+        shapes: ['star', 'circle'],
+        drift: 0
+      });
 
       // 存储到后端
       await invoke("store_temp_note", { note: newNote });

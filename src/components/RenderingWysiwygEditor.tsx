@@ -26,6 +26,22 @@ export default function RenderingWysiwygEditor({
     ] : undefined,
   });
 
+  // Reset editor when initialContent becomes empty
+  useEffect(() => {
+    if (editor && initialContent === '') {
+      // Clear the editor content
+      editor.children = [
+        {
+          type: 'p',
+          children: [{ text: '' }],
+        },
+      ];
+      if (typeof editor.onChange === 'function') {
+        editor.onChange();
+      }
+    }
+  }, [initialContent, editor]);
+
   // Handle content changes
   useEffect(() => {
     if (onChange && editor) {
