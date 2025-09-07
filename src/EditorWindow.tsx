@@ -123,7 +123,7 @@ function EditorWindow() {
 
   return (
     <div className="app-container">
-      <div className="app-header">
+      <div className="app-header" data-tauri-drag-region>
         <h1>✏️ Edit: {note?.title || 'Untitled'}</h1>
         <div className="view-modes">
           <button 

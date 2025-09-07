@@ -327,7 +327,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="app-header">
+      <div className="app-header" data-tauri-drag-region>
         <h1>📝 LovPen Notes</h1>
       </div>
 
