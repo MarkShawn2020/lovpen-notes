@@ -5,7 +5,7 @@ import {
   getAllWebviewWindows,
 } from "@tauri-apps/api/webviewWindow";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Pin, Play, Star, Trash2, X } from "lucide-react";
+import { Clock, Pin, Play, Send, Star, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import RenderingWysiwygEditor from "./components/RenderingWysiwygEditor";
@@ -27,6 +27,7 @@ function App() {
     "edit" | "preview" | "split" | "wysiwyg"
   >("split");
   const [resumingNoteId, setResumingNoteId] = useState<string | null>(null);
+  const [showRecentNotes, setShowRecentNotes] = useState(false);
   const notesListRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -345,125 +346,145 @@ function App() {
         <h1>📝 LovPen Notes</h1>
       </div>
 
-      <div className="notes-history">
-        <h2>Recent Notes ({notes.length})</h2>
-        <div className="notes-list" ref={notesListRef}>
-          {notes.length === 0 ? (
-            <p className="empty-state">No notes yet. Start writing below!</p>
-          ) : (
-            [...notes]
-              .sort((a, b) => {
-                // Pinned notes come first
-                if (a.pinned && !b.pinned) return -1;
-                if (!a.pinned && b.pinned) return 1;
-                return 0; // Keep original order for same pin status
-              })
-              .map((note) => (
-                <div
-                  key={note.id}
-                  className={`note-item ${
-                    resumingNoteId === note.id ? "resuming" : ""
-                  } ${note.favorite ? "favorite" : ""} ${
-                    note.pinned ? "pinned" : ""
-                  }`}
-                  onClick={() => handleOpenInNewWindow(note)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <div className="note-header">
-                    <div className="note-title">
-                      {note.pinned && (
-                        <Pin className="icon-inline pinned" size={14} />
-                      )}
-                      {note.favorite && (
-                        <Star className="icon-inline favorited" size={14} />
-                      )}
-                      {note.title}
-                    </div>
-                    <div className="note-time">{note.time}</div>
-                  </div>
-                  <div className="note-preview">
-                    {note.text.substring(0, 100)}...
-                  </div>
-                  <div className="note-footer">
-                    <div className="note-tags">
-                      {note.tags.map((tag, i) => (
-                        <span key={i} className="tag">
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                    <div
-                      className="note-actions"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        className={`action-btn pin-btn ${
-                          note.pinned ? "active" : ""
-                        }`}
-                        onClick={() => handlePin(note.id)}
-                        title={note.pinned ? "Unpin note" : "Pin note"}
-                      >
-                        <Pin size={14} />
-                      </button>
-                      <button
-                        className={`action-btn favorite-btn ${
-                          note.favorite ? "active" : ""
-                        }`}
-                        onClick={() => handleFavorite(note.id)}
-                        title={
-                          note.favorite ? "Unfavorite note" : "Favorite note"
-                        }
-                      >
-                        <Star size={14} />
-                      </button>
-                      <button
-                        className="action-btn delete-btn"
-                        onClick={() => handleDelete(note.id)}
-                        title="Delete note"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                      <button
-                        className={`action-btn resume-btn ${
-                          resumingNoteId === note.id ? "cancel" : ""
-                        }`}
-                        onClick={() => handleResume(note)}
-                        title={
-                          resumingNoteId === note.id
-                            ? "Cancel resume"
-                            : "Resume this note"
-                        }
-                      >
-                        {resumingNoteId === note.id ? (
-                          <X size={14} />
-                        ) : (
-                          <Play size={14} />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-          )}
-        </div>
-      </div>
 
       <div className="editor-section">
-
+        <div className="editor-area">
           <RenderingWysiwygEditor
             initialContent={content}
             onChange={setContent}
             placeholder="Start writing your note..."
           />
+          
+          <div className="editor-toolbar">
+            <div className="toolbar-left">
+              <button
+                className={`toolbar-btn ${showRecentNotes ? 'active' : ''}`}
+                onClick={() => setShowRecentNotes(!showRecentNotes)}
+                title="Toggle Recent Notes"
+              >
+                <Clock size={18} />
+              </button>
+            </div>
+            
+            <div className="toolbar-right">
+              <button
+                className="send-btn"
+                onClick={handleSubmit}
+                disabled={!content.trim()}
+                title="Submit (⌘+Enter)"
+              >
+                <Send size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
 
-
-        <button
-          className="submit-btn"
-          onClick={handleSubmit}
-          disabled={!content.trim()}
-        >
-          Submit (⌘+Enter)
-        </button>
+        {showRecentNotes && (
+          <div className="recent-notes-panel">
+            <div className="recent-notes-header">
+              <h3>Recent Notes ({notes.length})</h3>
+            </div>
+            <div className="notes-list" ref={notesListRef}>
+              {notes.length === 0 ? (
+                <p className="empty-state">No notes yet. Start writing above!</p>
+              ) : (
+                [...notes]
+                  .sort((a, b) => {
+                    // Pinned notes come first
+                    if (a.pinned && !b.pinned) return -1;
+                    if (!a.pinned && b.pinned) return 1;
+                    return 0; // Keep original order for same pin status
+                  })
+                  .map((note) => (
+                    <div
+                      key={note.id}
+                      className={`note-item ${
+                        resumingNoteId === note.id ? "resuming" : ""
+                      } ${note.favorite ? "favorite" : ""} ${
+                        note.pinned ? "pinned" : ""
+                      }`}
+                      onClick={() => handleOpenInNewWindow(note)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <div className="note-header">
+                        <div className="note-title">
+                          {note.pinned && (
+                            <Pin className="icon-inline pinned" size={14} />
+                          )}
+                          {note.favorite && (
+                            <Star className="icon-inline favorited" size={14} />
+                          )}
+                          {note.title}
+                        </div>
+                        <div className="note-time">{note.time}</div>
+                      </div>
+                      <div className="note-preview">
+                        {note.text.substring(0, 100)}...
+                      </div>
+                      <div className="note-footer">
+                        <div className="note-tags">
+                          {note.tags.map((tag, i) => (
+                            <span key={i} className="tag">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                        <div
+                          className="note-actions"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            className={`action-btn pin-btn ${
+                              note.pinned ? "active" : ""
+                            }`}
+                            onClick={() => handlePin(note.id)}
+                            title={note.pinned ? "Unpin note" : "Pin note"}
+                          >
+                            <Pin size={14} />
+                          </button>
+                          <button
+                            className={`action-btn favorite-btn ${
+                              note.favorite ? "active" : ""
+                            }`}
+                            onClick={() => handleFavorite(note.id)}
+                            title={
+                              note.favorite ? "Unfavorite note" : "Favorite note"
+                            }
+                          >
+                            <Star size={14} />
+                          </button>
+                          <button
+                            className="action-btn delete-btn"
+                            onClick={() => handleDelete(note.id)}
+                            title="Delete note"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                          <button
+                            className={`action-btn resume-btn ${
+                              resumingNoteId === note.id ? "cancel" : ""
+                            }`}
+                            onClick={() => handleResume(note)}
+                            title={
+                              resumingNoteId === note.id
+                                ? "Cancel resume"
+                                : "Resume this note"
+                            }
+                          >
+                            {resumingNoteId === note.id ? (
+                              <X size={14} />
+                            ) : (
+                              <Play size={14} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
