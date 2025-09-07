@@ -10,9 +10,12 @@ body {
 }
 
 .app-container {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: transparent;
 }
 
 .app-header {
@@ -288,11 +291,12 @@ body {
 }
 
 .editor-section {
-  height: calc(100vh - 60px); /* Fixed height: viewport minus header */
+  flex: 1;
   background: var(--background);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 .editor-area {
@@ -317,6 +321,10 @@ body {
   align-items: center;
   padding: 0 var(--spacing-s);
   z-index: 10;
+  /* Prevent toolbar from re-rendering during animations */
+  will-change: contents;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .toolbar-left {
@@ -342,14 +350,29 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.1s ease;
+  /* GPU acceleration for smooth animations */
+  transform: translateZ(0);
+  will-change: auto;
+  contain: layout style paint;
 }
 
 .toolbar-btn:hover {
   background: var(--secondary);
   color: var(--foreground);
-  transform: translateY(-1px);
+  transform: translateZ(0) translateY(-1px);
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Stabilize icons inside buttons */
+.toolbar-btn svg,
+.send-btn svg {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 .toolbar-btn.active {
@@ -369,8 +392,13 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: transform 0.2s ease,
+              box-shadow 0.2s ease,
+              background-color 0.2s ease;
   box-shadow: 0 2px 8px rgba(217, 119, 87, 0.25);
+  /* GPU acceleration */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .send-btn:hover:not(:disabled) {
@@ -397,34 +425,25 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideDown 0.3s ease-out;
+  /* GPU acceleration for smooth animations */
+  transform: translate3d(0, 0, 0); /* Start on screen by default */
+  will-change: transform;
+  backface-visibility: hidden;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.recent-notes-panel.hidden {
+  display: none;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(20px);
-  }
+.recent-notes-panel.visible {
+  transform: translate3d(0, 0, 0);
 }
 
-.recent-notes-panel.closing {
-  animation: slideUp 0.25s ease-out forwards;
+.recent-notes-panel.collapsed {
+  transform: translate3d(0, 100%, 0);
 }
+
 
 .recent-notes-header {
   padding: 12px var(--spacing-s);

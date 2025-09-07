@@ -6,7 +6,7 @@ import {
 } from "@tauri-apps/api/webviewWindow";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { Clock, Pin, Play, Send, Star, Trash2, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import RenderingWysiwygEditor from "./components/RenderingWysiwygEditor";
 
@@ -20,6 +20,58 @@ interface Note {
   pinned?: boolean;
 }
 
+// Memoized toolbar button to prevent re-renders
+const RecentNotesButton = memo(({ 
+  onClick 
+}: { 
+  onClick: () => void;
+}) => (
+  <button
+    className="toolbar-btn recent-notes-toggle"
+    onClick={onClick}
+    title="Toggle Recent Notes"
+  >
+    <Clock size={18} />
+  </button>
+));
+
+const SendButton = memo(({ 
+  disabled, 
+  onClick 
+}: { 
+  disabled: boolean; 
+  onClick: () => void;
+}) => (
+  <button
+    className="send-btn"
+    onClick={onClick}
+    disabled={disabled}
+    title="Submit (⌘+Enter)"
+  >
+    <Send size={18} />
+  </button>
+));
+
+// Memoized toolbar to prevent any re-renders
+const EditorToolbar = memo(({ 
+  onToggleNotes,
+  onSubmit,
+  submitDisabled
+}: {
+  onToggleNotes: () => void;
+  onSubmit: () => void;
+  submitDisabled: boolean;
+}) => (
+  <div className="editor-toolbar">
+    <div className="toolbar-left">
+      <RecentNotesButton onClick={onToggleNotes} />
+    </div>
+    <div className="toolbar-right">
+      <SendButton disabled={submitDisabled} onClick={onSubmit} />
+    </div>
+  </div>
+));
+
 function App() {
   const [content, setContent] = useState("");
   const [notes, setNotes] = useState<Note[]>([]);
@@ -31,26 +83,29 @@ function App() {
   const [isClosing, setIsClosing] = useState(false);
   const notesListRef = useRef<HTMLDivElement>(null);
   const baseWindowSize = useRef<{ width: number; height: number } | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const isExpandedRef = useRef(false);
 
-  // Store initial window size on mount
+  // Set window to expanded size on mount and keep it there
   useEffect(() => {
-    const storeInitialSize = async () => {
+    const initializeWindow = async () => {
       const appWindow = getCurrentWindow();
-      const innerSize = await appWindow.innerSize();
-      const outerSize = await appWindow.outerSize();
       
-      // Log both sizes for debugging
-      console.log('Initial inner size:', innerSize);
-      console.log('Initial outer size:', outerSize);
-      
-      // Use fixed size from config as baseline to avoid drift
+      // Always keep window at expanded size
       baseWindowSize.current = {
         width: 420,  // Fixed width from tauri.conf.json
-        height: 640  // Fixed height from tauri.conf.json
+        height: 640  // Original height - we'll adjust on first run
       };
-      console.log('Using fixed base size:', baseWindowSize.current);
+      
+      // Set window to original size initially (will expand on first use)
+      await appWindow.setSize(new LogicalSize(
+        baseWindowSize.current.width,
+        baseWindowSize.current.height
+      ));
+      
+      console.log('Window initialized at size:', baseWindowSize.current);
     };
-    storeInitialSize();
+    initializeWindow();
   }, []); // Only run once on mount
 
   useEffect(() => {
@@ -359,6 +414,60 @@ function App() {
     }
   };
 
+  // Toggle function - Resize window WITH panel animation
+  const handleToggleRecentNotes = useCallback(async () => {
+    const appWindow = getCurrentWindow();
+    
+    if (!panelRef.current || !baseWindowSize.current) {
+      console.error('Panel ref or base size not initialized');
+      return;
+    }
+    
+    if (!isExpandedRef.current) {
+      // Expanding
+      isExpandedRef.current = true;
+      
+      // First resize window
+      await appWindow.setSize(new LogicalSize(
+        baseWindowSize.current.width,
+        baseWindowSize.current.height + 250
+      ));
+      
+      // Then animate panel in
+      requestAnimationFrame(() => {
+        if (panelRef.current) {
+          panelRef.current.classList.remove('hidden', 'collapsed');
+          panelRef.current.classList.add('visible');
+        }
+        document.querySelector('.recent-notes-toggle')?.classList.add('active');
+      });
+      
+    } else {
+      // Collapsing
+      isExpandedRef.current = false;
+      
+      // First animate panel out
+      if (panelRef.current) {
+        panelRef.current.classList.remove('visible');
+        panelRef.current.classList.add('collapsed');
+      }
+      document.querySelector('.recent-notes-toggle')?.classList.remove('active');
+      
+      // Then resize window after animation completes
+      setTimeout(async () => {
+        await appWindow.setSize(new LogicalSize(
+          baseWindowSize.current!.width,
+          baseWindowSize.current!.height
+        ));
+        
+        if (panelRef.current) {
+          panelRef.current.classList.add('hidden');
+          panelRef.current.classList.remove('collapsed');
+        }
+      }, 300); // After animation completes
+    }
+  }, []);
+
   return (
     <div className="app-container">
       <div 
@@ -378,85 +487,15 @@ function App() {
             placeholder="Start writing your note..."
           />
           
-          <div className="editor-toolbar">
-            <div className="toolbar-left">
-              <button
-                className={`toolbar-btn ${showRecentNotes ? 'active' : ''}`}
-                onClick={async () => {
-                  const appWindow = getCurrentWindow();
-                  const newShowRecentNotes = !showRecentNotes;
-                  
-                  // Ensure we have the base size stored
-                  if (!baseWindowSize.current) {
-                    console.error('Base window size not initialized');
-                    return;
-                  }
-                  
-                  try {
-                    if (newShowRecentNotes) {
-                      // Expand: resize window first, then show panel
-                      const targetSize = {
-                        width: baseWindowSize.current.width,
-                        height: baseWindowSize.current.height + 250
-                      };
-                      
-                      await appWindow.setSize(new LogicalSize(
-                        targetSize.width,
-                        targetSize.height
-                      ));
-                      
-                      // Show panel after window resize
-                      setShowRecentNotes(true);
-                      setIsClosing(false);
-                    } else {
-                      // Collapse: trigger closing animation first
-                      setIsClosing(true);
-                      
-                      // Wait for animation to complete before hiding and resizing
-                      setTimeout(() => {
-                        setShowRecentNotes(false);
-                        setIsClosing(false);
-                      }, 250);
-                      
-                      setTimeout(async () => {
-                        if (!baseWindowSize.current) return;
-                        
-                        const targetSize = {
-                          width: baseWindowSize.current.width,
-                          height: baseWindowSize.current.height
-                        };
-                        
-                        await appWindow.setSize(new LogicalSize(
-                          targetSize.width,
-                          targetSize.height
-                        ));
-                      }, 300); // Match animation duration
-                    }
-                  } catch (error) {
-                    console.error('Failed to resize window:', error);
-                  }
-                }}
-                title="Toggle Recent Notes"
-              >
-                <Clock size={18} />
-              </button>
-            </div>
-            
-            <div className="toolbar-right">
-              <button
-                className="send-btn"
-                onClick={handleSubmit}
-                disabled={!content.trim()}
-                title="Submit (⌘+Enter)"
-              >
-                <Send size={18} />
-              </button>
-            </div>
-          </div>
+          <EditorToolbar
+            onToggleNotes={handleToggleRecentNotes}
+            onSubmit={handleSubmit}
+            submitDisabled={!content.trim()}
+          />
         </div>
 
-        {(showRecentNotes || isClosing) && (
-          <div className={`recent-notes-panel ${isClosing ? 'closing' : ''}`}>
+        {/* Panel always rendered but hidden by default */}
+        <div ref={panelRef} className="recent-notes-panel hidden">
             <div className="recent-notes-header">
               <h3>Recent Notes ({notes.length})</h3>
             </div>
@@ -560,7 +599,6 @@ function App() {
               )}
             </div>
           </div>
-        )}
       </div>
     </div>
   );
