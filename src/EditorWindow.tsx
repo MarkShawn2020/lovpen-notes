@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { invoke } from '@tauri-apps/api/core';
 import './App.css';
 import RenderingWysiwygEditor from './components/RenderingWysiwygEditor';
@@ -111,6 +112,15 @@ function EditorWindow() {
     await currentWindow.close();
   };
 
+  const handleHeaderMouseDown = async () => {
+    try {
+      const appWindow = getCurrentWindow();
+      await appWindow.startDragging();
+    } catch (error) {
+      console.error("Failed to start dragging:", error);
+    }
+  };
+
   if (!note) {
     return (
       <div className="app-container">
@@ -123,7 +133,11 @@ function EditorWindow() {
 
   return (
     <div className="app-container">
-      <div className="app-header" data-tauri-drag-region>
+      <div 
+        className="app-header" 
+        onMouseDown={handleHeaderMouseDown}
+        style={{ cursor: 'move' }}
+      >
         <h1>✏️ Edit: {note?.title || 'Untitled'}</h1>
         <div className="view-modes">
           <button 

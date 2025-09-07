@@ -4,6 +4,7 @@ import {
   WebviewWindow,
   getAllWebviewWindows,
 } from "@tauri-apps/api/webviewWindow";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Pin, Play, Star, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
@@ -325,9 +326,22 @@ function App() {
     }
   };
 
+  const handleHeaderMouseDown = async () => {
+    try {
+      const appWindow = getCurrentWindow();
+      await appWindow.startDragging();
+    } catch (error) {
+      console.error("Failed to start dragging:", error);
+    }
+  };
+
   return (
     <div className="app-container">
-      <div className="app-header" data-tauri-drag-region>
+      <div 
+        className="app-header" 
+        onMouseDown={handleHeaderMouseDown}
+        style={{ cursor: 'move' }}
+      >
         <h1>📝 LovPen Notes</h1>
       </div>
 

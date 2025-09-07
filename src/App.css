@@ -23,9 +23,10 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-radius: 20px 20px 0 0;
-  -webkit-app-region: drag;
+  border-radius: 12px 12px 0 0;
+  cursor: move;
   user-select: none;
+  -webkit-user-select: none;
 }
 
 .app-header h1 {
@@ -40,7 +41,6 @@ body {
   background: rgba(255,255,255,0.15);
   padding: 2px;
   border-radius: var(--radius);
-  -webkit-app-region: no-drag;
 }
 
 .view-modes button {
