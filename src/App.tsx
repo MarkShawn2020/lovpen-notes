@@ -6,7 +6,7 @@ import {
 } from "@tauri-apps/api/webviewWindow";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import confetti from "canvas-confetti";
-import { Clock, Pin, Play, Send, Star, Trash2, X, TrendingUp, Calendar, Hash } from "lucide-react";
+import { Clock, Pin, Play, Send, Star, Trash2, X } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState, useMemo } from "react";
 import "./App.css";
 import lovpenLogo from "./assets/lovpen-logo.svg";
@@ -54,86 +54,19 @@ const SendButton = memo(({
   </button>
 ));
 
-// Note statistics component
-const NoteStats = memo(({ 
-  stats, 
-  expanded = false 
-}: { 
-  stats: {
-    total: number;
-    today: number;
-    favorites: number;
-    pinned: number;
-    weekCount: number;
-    avgLength: number;
-    streak: number;
-  };
-  expanded?: boolean;
-}) => {
-  const [showDetails, setShowDetails] = useState(false);
-
-  return (
-    <div 
-      className="note-stats"
-      onMouseEnter={() => setShowDetails(true)}
-      onMouseLeave={() => setShowDetails(false)}
-    >
-      <div className="stats-main">
-        <span className="stat-item stat-total">
-          <Hash size={14} />
-          <span>{stats.total}</span>
-        </span>
-        {stats.today > 0 && (
-          <span className="stat-item stat-today pulse">
-            <TrendingUp size={14} />
-            <span>+{stats.today}</span>
-          </span>
-        )}
-        {stats.streak > 1 && (
-          <span className="stat-item stat-streak fire">
-            🔥 {stats.streak}
-          </span>
-        )}
-      </div>
-      
-      {showDetails && (
-        <div className="stats-details">
-          <div className="detail-row">
-            <span>This week: {stats.weekCount} notes</span>
-          </div>
-          <div className="detail-row">
-            <span>⭐ {stats.favorites} favorites</span>
-          </div>
-          <div className="detail-row">
-            <span>📌 {stats.pinned} pinned</span>
-          </div>
-          <div className="detail-row">
-            <span>Avg: ~{stats.avgLength} chars</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-});
-
 // Memoized toolbar to prevent any re-renders
 const EditorToolbar = memo(({ 
   onToggleNotes,
   onSubmit,
-  submitDisabled,
-  stats
+  submitDisabled
 }: {
   onToggleNotes: () => void;
   onSubmit: () => void;
   submitDisabled: boolean;
-  stats?: any;
 }) => (
   <div className="editor-toolbar">
     <div className="toolbar-left">
       <RecentNotesButton onClick={onToggleNotes} />
-    </div>
-    <div className="toolbar-center">
-      {stats && <NoteStats stats={stats} />}
     </div>
     <div className="toolbar-right">
       <SendButton disabled={submitDisabled} onClick={onSubmit} />
@@ -640,7 +573,6 @@ function App() {
             onToggleNotes={handleToggleRecentNotes}
             onSubmit={handleSubmit}
             submitDisabled={!content.trim()}
-            stats={noteStats}
           />
         </div>
 
