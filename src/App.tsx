@@ -9,6 +9,7 @@ import confetti from "canvas-confetti";
 import { Clock, Pin, Play, Send, Star, Trash2, X, TrendingUp, Calendar, Hash } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState, useMemo } from "react";
 import "./App.css";
+import lovpenLogo from "./assets/lovpen-logo.svg";
 import RenderingWysiwygEditor from "./components/RenderingWysiwygEditor";
 
 interface Note {
@@ -605,7 +606,15 @@ function App() {
         onMouseDown={handleHeaderMouseDown}
         style={{ cursor: 'move' }}
       >
-        <h1>📝 LovPen Notes</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img 
+            src={lovpenLogo} 
+            alt="LovPen" 
+            className="app-logo"
+            style={{ height: '20px', width: 'auto' }}
+          />
+          <h1>LovPen Notes</h1>
+        </div>
         <div className="header-stats">
           <span className="header-stat-badge">
             {noteStats.total} {noteStats.total === 1 ? 'note' : 'notes'}

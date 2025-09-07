@@ -39,6 +39,11 @@ body {
   font-weight: 600;
   letter-spacing: -0.01em;
 }
+.app-logo {
+  filter: brightness(0) invert(1); /* Make the logo white */
+  user-select: none;
+  -webkit-user-drag: none;
+}
 
 .view-modes {
   display: flex;
