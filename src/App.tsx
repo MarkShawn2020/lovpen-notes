@@ -6,8 +6,8 @@ import {
 } from "@tauri-apps/api/webviewWindow";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import confetti from "canvas-confetti";
-import { Clock, Pin, Play, Send, Star, Trash2, X } from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { Clock, Pin, Play, Send, Star, Trash2, X, TrendingUp, Calendar, Hash } from "lucide-react";
+import { memo, useCallback, useEffect, useRef, useState, useMemo } from "react";
 import "./App.css";
 import RenderingWysiwygEditor from "./components/RenderingWysiwygEditor";
 
@@ -53,19 +53,86 @@ const SendButton = memo(({
   </button>
 ));
 
+// Note statistics component
+const NoteStats = memo(({ 
+  stats, 
+  expanded = false 
+}: { 
+  stats: {
+    total: number;
+    today: number;
+    favorites: number;
+    pinned: number;
+    weekCount: number;
+    avgLength: number;
+    streak: number;
+  };
+  expanded?: boolean;
+}) => {
+  const [showDetails, setShowDetails] = useState(false);
+
+  return (
+    <div 
+      className="note-stats"
+      onMouseEnter={() => setShowDetails(true)}
+      onMouseLeave={() => setShowDetails(false)}
+    >
+      <div className="stats-main">
+        <span className="stat-item stat-total">
+          <Hash size={14} />
+          <span>{stats.total}</span>
+        </span>
+        {stats.today > 0 && (
+          <span className="stat-item stat-today pulse">
+            <TrendingUp size={14} />
+            <span>+{stats.today}</span>
+          </span>
+        )}
+        {stats.streak > 1 && (
+          <span className="stat-item stat-streak fire">
+            🔥 {stats.streak}
+          </span>
+        )}
+      </div>
+      
+      {showDetails && (
+        <div className="stats-details">
+          <div className="detail-row">
+            <span>This week: {stats.weekCount} notes</span>
+          </div>
+          <div className="detail-row">
+            <span>⭐ {stats.favorites} favorites</span>
+          </div>
+          <div className="detail-row">
+            <span>📌 {stats.pinned} pinned</span>
+          </div>
+          <div className="detail-row">
+            <span>Avg: ~{stats.avgLength} chars</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
 // Memoized toolbar to prevent any re-renders
 const EditorToolbar = memo(({ 
   onToggleNotes,
   onSubmit,
-  submitDisabled
+  submitDisabled,
+  stats
 }: {
   onToggleNotes: () => void;
   onSubmit: () => void;
   submitDisabled: boolean;
+  stats?: any;
 }) => (
   <div className="editor-toolbar">
     <div className="toolbar-left">
       <RecentNotesButton onClick={onToggleNotes} />
+    </div>
+    <div className="toolbar-center">
+      {stats && <NoteStats stats={stats} />}
     </div>
     <div className="toolbar-right">
       <SendButton disabled={submitDisabled} onClick={onSubmit} />
@@ -86,6 +153,55 @@ function App() {
   const baseWindowSize = useRef<{ width: number; height: number } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const isExpandedRef = useRef(false);
+
+  // Calculate note statistics
+  const noteStats = useMemo(() => {
+    const now = new Date();
+    const today = now.toDateString();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    const todayNotes = notes.filter(n => 
+      new Date(n.time).toDateString() === today
+    );
+    
+    const weekNotes = notes.filter(n => 
+      new Date(n.time) >= weekAgo
+    );
+    
+    // Calculate streak (consecutive days with notes)
+    const streak = (() => {
+      const sortedDates = [...new Set(notes.map(n => 
+        new Date(n.time).toDateString()
+      ))].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+      
+      let count = 0;
+      const checkDate = new Date();
+      
+      for (let i = 0; i < 30; i++) {
+        if (sortedDates.includes(checkDate.toDateString())) {
+          count++;
+        } else if (count > 0) {
+          break;
+        }
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+      
+      return count;
+    })();
+    
+    const totalChars = notes.reduce((acc, n) => acc + n.text.length, 0);
+    const avgLength = notes.length > 0 ? Math.round(totalChars / notes.length) : 0;
+    
+    return {
+      total: notes.length,
+      today: todayNotes.length,
+      favorites: notes.filter(n => n.favorite).length,
+      pinned: notes.filter(n => n.pinned).length,
+      weekCount: weekNotes.length,
+      avgLength,
+      streak
+    };
+  }, [notes]);
 
   // Set window to expanded size on mount and keep it there
   useEffect(() => {
@@ -490,6 +606,16 @@ function App() {
         style={{ cursor: 'move' }}
       >
         <h1>📝 LovPen Notes</h1>
+        <div className="header-stats">
+          <span className="header-stat-badge">
+            {noteStats.total} {noteStats.total === 1 ? 'note' : 'notes'}
+          </span>
+          {noteStats.streak > 2 && (
+            <span className="header-stat-badge streak-badge" title={`${noteStats.streak} day streak!`}>
+              🔥 {noteStats.streak}d
+            </span>
+          )}
+        </div>
       </div>
 
 
@@ -505,6 +631,7 @@ function App() {
             onToggleNotes={handleToggleRecentNotes}
             onSubmit={handleSubmit}
             submitDisabled={!content.trim()}
+            stats={noteStats}
           />
         </div>
 
