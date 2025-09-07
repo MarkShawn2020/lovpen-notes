@@ -4,7 +4,7 @@ import {
   WebviewWindow,
   getAllWebviewWindows,
 } from "@tauri-apps/api/webviewWindow";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { Clock, Pin, Play, Send, Star, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
@@ -29,6 +29,28 @@ function App() {
   const [resumingNoteId, setResumingNoteId] = useState<string | null>(null);
   const [showRecentNotes, setShowRecentNotes] = useState(false);
   const notesListRef = useRef<HTMLDivElement>(null);
+  const baseWindowSize = useRef<{ width: number; height: number } | null>(null);
+
+  // Store initial window size on mount
+  useEffect(() => {
+    const storeInitialSize = async () => {
+      const appWindow = getCurrentWindow();
+      const innerSize = await appWindow.innerSize();
+      const outerSize = await appWindow.outerSize();
+      
+      // Log both sizes for debugging
+      console.log('Initial inner size:', innerSize);
+      console.log('Initial outer size:', outerSize);
+      
+      // Use fixed size from config as baseline to avoid drift
+      baseWindowSize.current = {
+        width: 420,  // Fixed width from tauri.conf.json
+        height: 640  // Fixed height from tauri.conf.json
+      };
+      console.log('Using fixed base size:', baseWindowSize.current);
+    };
+    storeInitialSize();
+  }, []); // Only run once on mount
 
   useEffect(() => {
     // 监听窗口切换事件
@@ -359,7 +381,61 @@ function App() {
             <div className="toolbar-left">
               <button
                 className={`toolbar-btn ${showRecentNotes ? 'active' : ''}`}
-                onClick={() => setShowRecentNotes(!showRecentNotes)}
+                onClick={async () => {
+                  const appWindow = getCurrentWindow();
+                  const newShowRecentNotes = !showRecentNotes;
+                  
+                  // Ensure we have the base size stored
+                  if (!baseWindowSize.current) {
+                    console.error('Base window size not initialized');
+                    return;
+                  }
+                  
+                  try {
+                    // Get current size for debugging
+                    const currentInner = await appWindow.innerSize();
+                    const currentOuter = await appWindow.outerSize();
+                    console.log('Before resize - Inner:', currentInner, 'Outer:', currentOuter);
+                    
+                    if (newShowRecentNotes) {
+                      // Expand window: use base height + 250
+                      const targetSize = {
+                        width: baseWindowSize.current.width,
+                        height: baseWindowSize.current.height + 250
+                      };
+                      console.log('Expanding to target:', targetSize);
+                      
+                      await appWindow.setSize(new LogicalSize(
+                        targetSize.width,
+                        targetSize.height
+                      ));
+                      
+                      // Verify the resize
+                      const afterInner = await appWindow.innerSize();
+                      console.log('After expand - Inner:', afterInner);
+                    } else {
+                      // Restore to original size
+                      const targetSize = {
+                        width: baseWindowSize.current.width,
+                        height: baseWindowSize.current.height
+                      };
+                      console.log('Restoring to target:', targetSize);
+                      
+                      await appWindow.setSize(new LogicalSize(
+                        targetSize.width,
+                        targetSize.height
+                      ));
+                      
+                      // Verify the resize
+                      const afterInner = await appWindow.innerSize();
+                      console.log('After restore - Inner:', afterInner);
+                    }
+                  } catch (error) {
+                    console.error('Failed to resize window:', error);
+                  }
+                  
+                  setShowRecentNotes(newShowRecentNotes);
+                }}
                 title="Toggle Recent Notes"
               >
                 <Clock size={18} />

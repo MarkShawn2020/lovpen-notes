@@ -10,12 +10,13 @@ body {
 }
 
 .app-container {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 .app-header {
+  height: 60px;
   padding: var(--spacing-s) var(--spacing-text);
   background: var(--primary);
   color: var(--primary-foreground);
@@ -27,6 +28,7 @@ body {
   cursor: move;
   user-select: none;
   -webkit-user-select: none;
+  flex-shrink: 0;
 }
 
 .app-header h1 {
@@ -286,7 +288,7 @@ body {
 }
 
 .editor-section {
-  flex: 1;
+  height: calc(100vh - 60px); /* Fixed height: viewport minus header */
   background: var(--background);
   display: flex;
   flex-direction: column;
@@ -299,6 +301,7 @@ body {
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  min-height: 0;
 }
 
 .editor-toolbar {
@@ -388,22 +391,23 @@ body {
 
 .recent-notes-panel {
   height: 250px;
+  flex-shrink: 0;
   background: var(--muted);
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideUp 0.3s ease-out;
+  animation: slideDown 0.3s ease-out;
 }
 
-@keyframes slideUp {
+@keyframes slideDown {
   from {
-    transform: translateY(100%);
     opacity: 0;
+    transform: translateY(20px);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 

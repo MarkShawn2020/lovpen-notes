@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import path from "path";
-import { codeInspectorPlugin } from "code-inspector-plugin";
+import { codeInspectorPlugin } from "@neurora/code-inspector-plugin";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
