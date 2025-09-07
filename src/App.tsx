@@ -28,6 +28,7 @@ function App() {
   >("split");
   const [resumingNoteId, setResumingNoteId] = useState<string | null>(null);
   const [showRecentNotes, setShowRecentNotes] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const notesListRef = useRef<HTMLDivElement>(null);
   const baseWindowSize = useRef<{ width: number; height: number } | null>(null);
 
@@ -392,49 +393,48 @@ function App() {
                   }
                   
                   try {
-                    // Get current size for debugging
-                    const currentInner = await appWindow.innerSize();
-                    const currentOuter = await appWindow.outerSize();
-                    console.log('Before resize - Inner:', currentInner, 'Outer:', currentOuter);
-                    
                     if (newShowRecentNotes) {
-                      // Expand window: use base height + 250
+                      // Expand: resize window first, then show panel
                       const targetSize = {
                         width: baseWindowSize.current.width,
                         height: baseWindowSize.current.height + 250
                       };
-                      console.log('Expanding to target:', targetSize);
                       
                       await appWindow.setSize(new LogicalSize(
                         targetSize.width,
                         targetSize.height
                       ));
                       
-                      // Verify the resize
-                      const afterInner = await appWindow.innerSize();
-                      console.log('After expand - Inner:', afterInner);
+                      // Show panel after window resize
+                      setShowRecentNotes(true);
+                      setIsClosing(false);
                     } else {
-                      // Restore to original size
-                      const targetSize = {
-                        width: baseWindowSize.current.width,
-                        height: baseWindowSize.current.height
-                      };
-                      console.log('Restoring to target:', targetSize);
+                      // Collapse: trigger closing animation first
+                      setIsClosing(true);
                       
-                      await appWindow.setSize(new LogicalSize(
-                        targetSize.width,
-                        targetSize.height
-                      ));
+                      // Wait for animation to complete before hiding and resizing
+                      setTimeout(() => {
+                        setShowRecentNotes(false);
+                        setIsClosing(false);
+                      }, 250);
                       
-                      // Verify the resize
-                      const afterInner = await appWindow.innerSize();
-                      console.log('After restore - Inner:', afterInner);
+                      setTimeout(async () => {
+                        if (!baseWindowSize.current) return;
+                        
+                        const targetSize = {
+                          width: baseWindowSize.current.width,
+                          height: baseWindowSize.current.height
+                        };
+                        
+                        await appWindow.setSize(new LogicalSize(
+                          targetSize.width,
+                          targetSize.height
+                        ));
+                      }, 300); // Match animation duration
                     }
                   } catch (error) {
                     console.error('Failed to resize window:', error);
                   }
-                  
-                  setShowRecentNotes(newShowRecentNotes);
                 }}
                 title="Toggle Recent Notes"
               >
@@ -455,8 +455,8 @@ function App() {
           </div>
         </div>
 
-        {showRecentNotes && (
-          <div className="recent-notes-panel">
+        {(showRecentNotes || isClosing) && (
+          <div className={`recent-notes-panel ${isClosing ? 'closing' : ''}`}>
             <div className="recent-notes-header">
               <h3>Recent Notes ({notes.length})</h3>
             </div>
