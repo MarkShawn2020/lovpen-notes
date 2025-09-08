@@ -44,8 +44,8 @@ npm version $NEW_VERSION --no-git-tag-version --allow-same-version >/dev/null 2>
 # Sync version to other files
 node scripts/sync-version.js $NEW_VERSION
 
-# Stage the version changes
-git add package.json src-tauri/tauri.conf.json src-tauri/Cargo.toml
+# Stage the version changes (including Cargo.lock which gets updated automatically)
+git add package.json src-tauri/tauri.conf.json src-tauri/Cargo.toml src-tauri/Cargo.lock
 
 # Amend the commit to include version changes (with flag to prevent recursion)
 SKIP_POST_COMMIT=1 git commit --amend --no-edit --no-verify
