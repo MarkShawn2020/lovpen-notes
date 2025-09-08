@@ -1,11 +1,17 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const version = process.argv[2];
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Get version from package.json if not provided as argument
+let version = process.argv[2];
 if (!version) {
-  console.error('Version argument is required');
-  process.exit(1);
+  const packageJsonPath = path.join(__dirname, '..', 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  version = packageJson.version;
 }
 
 console.log(`Syncing version to ${version}...`);
