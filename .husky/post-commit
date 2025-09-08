@@ -1,7 +1,22 @@
 #!/bin/sh
 
+# Prevent recursive execution
+if [ "$SKIP_POST_COMMIT" = "1" ]; then
+  exit 0
+fi
+
+# Check if this is an amend commit by checking if version files are already staged
+if git diff --cached --name-only | grep -q "package.json\|tauri.conf.json\|Cargo.toml"; then
+  exit 0
+fi
+
 # Get the last commit message
 COMMIT_MSG=$(git log -1 --pretty=%B)
+
+# Skip if commit message contains [skip-version] or is a release commit
+if echo "$COMMIT_MSG" | grep -q "\[skip-version\]\|chore(release)"; then
+  exit 0
+fi
 
 # Determine version bump type based on commit message
 if echo "$COMMIT_MSG" | grep -q "^feat!:\|BREAKING CHANGE:"; then
@@ -32,7 +47,7 @@ node scripts/sync-version.js $NEW_VERSION
 # Stage the version changes
 git add package.json src-tauri/tauri.conf.json src-tauri/Cargo.toml
 
-# Amend the commit to include version changes
-git commit --amend --no-edit --no-verify
+# Amend the commit to include version changes (with flag to prevent recursion)
+SKIP_POST_COMMIT=1 git commit --amend --no-edit --no-verify
 
 echo "✅ Version updated to $NEW_VERSION"
