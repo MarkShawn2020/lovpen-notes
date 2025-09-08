@@ -84,9 +84,11 @@ function App() {
   const [showRecentNotes, setShowRecentNotes] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const notesListRef = useRef<HTMLDivElement>(null);
-  const baseWindowSize = useRef<{ width: number; height: number } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const isExpandedRef = useRef(false);
+  // Store the collapsed height to restore when collapsing
+  const collapsedHeightRef = useRef<number | null>(null);
+  const PANEL_HEIGHT = 250;
 
   // Calculate note statistics
   const noteStats = useMemo(() => {
@@ -137,26 +139,11 @@ function App() {
     };
   }, [notes]);
 
-  // Set window to expanded size on mount and keep it there
+  // Initialize window state on mount
   useEffect(() => {
-    const initializeWindow = async () => {
-      const appWindow = getCurrentWindow();
-      
-      // Always keep window at expanded size
-      baseWindowSize.current = {
-        width: 420,  // Fixed width from tauri.conf.json
-        height: 640  // Original height - we'll adjust on first run
-      };
-      
-      // Set window to original size initially (will expand on first use)
-      await appWindow.setSize(new LogicalSize(
-        baseWindowSize.current.width,
-        baseWindowSize.current.height
-      ));
-      
-      console.log('Window initialized at size:', baseWindowSize.current);
-    };
-    initializeWindow();
+    // Simply mark as not expanded on mount, don't change window size
+    isExpandedRef.current = false;
+    console.log('Window state initialized');
   }, []); // Only run once on mount
 
   useEffect(() => {
@@ -478,26 +465,32 @@ function App() {
     }
   };
 
-  // Toggle function - Resize window WITH panel animation
+  // Toggle function - Preserve user's window size adjustments
   const handleToggleRecentNotes = useCallback(async () => {
     const appWindow = getCurrentWindow();
     
-    if (!panelRef.current || !baseWindowSize.current) {
-      console.error('Panel ref or base size not initialized');
+    if (!panelRef.current) {
+      console.error('Panel ref not initialized');
       return;
     }
     
+    // Get current size and convert to logical pixels
+    const physicalSize = await appWindow.innerSize();
+    const scaleFactor = await appWindow.scaleFactor();
+    const currentSize = physicalSize.toLogical(scaleFactor);
+    
     if (!isExpandedRef.current) {
-      // Expanding
+      // Expanding: save current height as collapsed height, then expand
       isExpandedRef.current = true;
+      collapsedHeightRef.current = currentSize.height;
       
-      // First resize window
+      // Expand window by adding panel height
       await appWindow.setSize(new LogicalSize(
-        baseWindowSize.current.width,
-        baseWindowSize.current.height + 250
+        currentSize.width,
+        currentSize.height + PANEL_HEIGHT
       ));
       
-      // Then animate panel in
+      // Animate panel in
       requestAnimationFrame(() => {
         if (panelRef.current) {
           panelRef.current.classList.remove('hidden', 'collapsed');
@@ -507,30 +500,33 @@ function App() {
       });
       
     } else {
-      // Collapsing
+      // Collapsing: restore to saved collapsed height
       isExpandedRef.current = false;
       
-      // First animate panel out
+      // Animate panel out
       if (panelRef.current) {
         panelRef.current.classList.remove('visible');
         panelRef.current.classList.add('collapsed');
       }
       document.querySelector('.recent-notes-toggle')?.classList.remove('active');
       
-      // Then resize window after animation completes
+      // Resize window after animation
       setTimeout(async () => {
+        // Use saved collapsed height if available, otherwise subtract panel height
+        const targetHeight = collapsedHeightRef.current ?? (currentSize.height - PANEL_HEIGHT);
+        
         await appWindow.setSize(new LogicalSize(
-          baseWindowSize.current!.width,
-          baseWindowSize.current!.height
+          currentSize.width,
+          targetHeight
         ));
         
         if (panelRef.current) {
           panelRef.current.classList.add('hidden');
           panelRef.current.classList.remove('collapsed');
         }
-      }, 300); // After animation completes
+      }, 300);
     }
-  }, []);
+  }, [PANEL_HEIGHT]);
 
   return (
     <div className="app-container">
