@@ -63,7 +63,7 @@
   --radius: 0.75rem;
   --radius-lg: 1.5rem;
   --radius-full: 9999px;
-  
+
   /* Core Colors */
   --background: #F9F9F7;
   --foreground: #181818;
@@ -83,14 +83,14 @@
   --border: #E8E6DC;
   --input: #E8E6DC;
   --ring: #D97757;
-  
+
   /* Swatch Colors */
   --chart-1: #B49FD8;
   --chart-2: #C2C07D;
   --chart-3: #629A90;
   --chart-4: #97B5D5;
   --chart-5: #D2BEDF;
-  
+
   /* Sidebar */
   --sidebar: #F7F4EC;
   --sidebar-foreground: #181818;
@@ -100,11 +100,11 @@
   --sidebar-accent-foreground: #181818;
   --sidebar-border: #E8E6DC;
   --sidebar-ring: #D97757;
-  
+
   /* Brand Colors */
   --brand: #D97757;
   --highlight: #C2C07D;
-  
+
   /* Spacing */
   --spacing-text: 1rem;
   --spacing-gutter: 2rem;
@@ -113,7 +113,7 @@
   --spacing-l: 3rem;
   --spacing-xl: 4rem;
   --spacing-xxl: 6rem;
-  
+
   /* Font */
   --font-sans: 'Fira Code', ui-sans-serif, system-ui, sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
@@ -139,14 +139,14 @@
   --border: rgba(135, 134, 127, 0.2);
   --input: rgba(135, 134, 127, 0.25);
   --ring: #D97757;
-  
+
   /* Swatch Colors - Dark Mode */
   --chart-1: #B49FD8;
   --chart-2: #C2C07D;
   --chart-3: #629A90;
   --chart-4: #97B5D5;
   --chart-5: #D2BEDF;
-  
+
   /* Sidebar - Dark Mode */
   --sidebar: #181818;
   --sidebar-foreground: #F9F9F7;
@@ -156,7 +156,7 @@
   --sidebar-accent-foreground: #F9F9F7;
   --sidebar-border: rgba(135, 134, 127, 0.2);
   --sidebar-ring: #D97757;
-  
+
   /* Brand Colors - Dark Mode */
   --brand: #D97757;
   --highlight: #C2C07D;
@@ -166,7 +166,7 @@
   * {
     @apply border-border outline-ring/50;
   }
-  
+
   html {
     background: transparent !important;
     margin: 0;
@@ -174,7 +174,7 @@
     height: 100vh;
     overflow: hidden;
   }
-  
+
   body {
     background: transparent !important;
     margin: 0;
@@ -182,7 +182,7 @@
     height: 100vh;
     overflow: hidden;
   }
-  
+
   #root {
     background: transparent !important;
     width: 100vw;
@@ -191,7 +191,7 @@
     padding: 0;
     overflow: hidden;
   }
-  
+
   .app-container {
     background-color: var(--background);
     border-radius: 12px;
@@ -199,5 +199,14 @@
     width: 100vw;
     overflow: hidden;
     box-sizing: border-box;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }

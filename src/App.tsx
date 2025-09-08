@@ -11,6 +11,7 @@ import { memo, useCallback, useEffect, useRef, useState, useMemo } from "react";
 import "./App.css";
 import lovpenLogo from "./assets/lovpen-logo.svg";
 import RenderingWysiwygEditor from "./components/RenderingWysiwygEditor";
+import packageJson from "../package.json";
 
 interface Note {
   id: string;
@@ -543,6 +544,21 @@ function App() {
             style={{ height: '20px', width: 'auto' }}
           />
           <h1>LovPen Notes</h1>
+          <span 
+            className="version-badge" 
+            style={{ 
+              fontSize: '0.7em', 
+              padding: '2px 6px', 
+              marginLeft: '4px',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '4px',
+              fontWeight: 'normal',
+              opacity: 0.7,
+              alignSelf: 'center'
+            }}
+          >
+            v{packageJson.version}
+          </span>
         </div>
         <div className="header-stats">
           <span className="header-stat-badge">
