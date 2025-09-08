@@ -578,9 +578,6 @@ function App() {
 
         {/* Panel always rendered but hidden by default */}
         <div ref={panelRef} className="recent-notes-panel hidden">
-            <div className="recent-notes-header">
-              <h3>Recent Notes ({notes.length})</h3>
-            </div>
             <div className="notes-list" ref={notesListRef}>
               {notes.length === 0 ? (
                 <p className="empty-state">No notes yet. Start writing above!</p>
