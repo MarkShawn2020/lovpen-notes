@@ -3,7 +3,9 @@
 import { EditorKit } from '@/components/editor/editor-kit';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 import { Plate, usePlateEditor, useEditorValue } from 'platejs/react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { ReactEditor } from 'slate-react';
+import { Transforms, Editor as SlateEditor } from 'slate';
 
 interface RenderingWysiwygEditorProps {
   initialContent?: string;
@@ -16,7 +18,8 @@ export default function RenderingWysiwygEditor({
   onChange,
   placeholder = "Type your amazing content here..." 
 }: RenderingWysiwygEditorProps) {
-    const editor = usePlateEditor({
+  const containerRef = useRef<HTMLDivElement>(null);
+  const editor = usePlateEditor({
     plugins: EditorKit,
     value: initialContent ? [
       {
@@ -59,8 +62,36 @@ export default function RenderingWysiwygEditor({
     }
   }, [editor, onChange]);
 
+  // Handle clicks on the editor container to focus at the end
+  const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Check if the click is on the container itself or empty space
+    const target = e.target as HTMLElement;
+    
+    // Check if we clicked on empty space (no content element)
+    const isEmptyAreaClick = !target.closest('[data-slate-node]') && 
+                             !target.closest('[data-slate-editor]');
+    
+    if (isEmptyAreaClick && editor) {
+      // Focus the editor
+      ReactEditor.focus(editor as any);
+      
+      // Move cursor to the end of the last block
+      const lastPath = [editor.children.length - 1];
+      const end = SlateEditor.end(editor as any, lastPath);
+      
+      Transforms.select(editor as any, {
+        anchor: end,
+        focus: end
+      });
+    }
+  };
+
   return (
-    <div className="h-full w-full flex flex-col">
+    <div 
+      ref={containerRef}
+      className="h-full w-full flex flex-col"
+      onClick={handleContainerClick}
+    >
       <Plate editor={editor}>
           <EditorContainer className="h-full w-full flex flex-col flex-1">
             <Editor 
