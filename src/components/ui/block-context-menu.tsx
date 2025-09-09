@@ -11,23 +11,13 @@ import {
 import { KEYS } from 'platejs';
 import { useEditorPlugin, usePlateState } from 'platejs/react';
 
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuGroup,
-  ContextMenuItem,
-  ContextMenuSub,
-  ContextMenuSubContent,
-  ContextMenuSubTrigger,
-  ContextMenuTrigger,
-} from '@/components/ui/context-menu';
 import { useIsTouchDevice } from '@/hooks/use-is-touch-device';
 
-type Value = 'askAI' | null;
-
-export function BlockContextMenu({ children }: { children: React.ReactNode }) {
+export function BlockContextMenu() {
   const { api, editor } = useEditorPlugin(BlockMenuPlugin);
-  const [value, setValue] = React.useState<Value>(null);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [menuPosition, setMenuPosition] = React.useState({ x: 0, y: 0 });
+  const menuRef = React.useRef<HTMLDivElement>(null);
   const isTouch = useIsTouchDevice();
   const [readOnly] = usePlateState('readOnly');
 
@@ -42,9 +32,9 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
               at: path,
             });
           }
-
           editor.tf.toggleBlock(type, { at: path });
         });
+      setMenuOpen(false);
     },
     [editor]
   );
@@ -54,144 +44,181 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
       editor
         .getTransforms(BlockSelectionPlugin)
         .blockSelection.setNodes({ align });
+      setMenuOpen(false);
     },
     [editor]
   );
 
+  // Only set up context menu listener, nothing else
+  React.useEffect(() => {
+    if (isTouch || readOnly) return;
+
+    const handleContextMenu = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // Only handle if it's in the editor
+      if (target.closest('[data-slate-editor="true"]')) {
+        event.preventDefault();
+        setMenuPosition({ x: event.clientX, y: event.clientY });
+        setMenuOpen(true);
+        api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, {
+          x: event.clientX,
+          y: event.clientY,
+        });
+      }
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+        api.blockMenu.hide();
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (menuOpen && event.key === 'Escape') {
+        setMenuOpen(false);
+        api.blockMenu.hide();
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [api.blockMenu, isTouch, readOnly, menuOpen]);
+
+  // Don't wrap children at all, just render the menu when needed
   if (isTouch) {
-    return children;
+    return null;
+  }
+
+  if (!menuOpen) {
+    return null;
   }
 
   return (
-    <ContextMenu
-      onOpenChange={(open) => {
-        if (!open) {
-          // prevent unselect the block selection
-          setTimeout(() => {
-            api.blockMenu.hide();
-          }, 0);
-        }
+    <div
+      ref={menuRef}
+      className="fixed z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md w-64"
+      style={{
+        left: `${menuPosition.x}px`,
+        top: `${menuPosition.y}px`,
       }}
-      modal={false}
     >
-      <ContextMenuTrigger
-        asChild
-        onContextMenu={(event) => {
-          const dataset = (event.target as HTMLElement).dataset;
-          const disabled =
-            dataset?.slateEditor === 'true' ||
-            readOnly ||
-            dataset?.plateOpenContextMenu === 'false';
-
-          if (disabled) return event.preventDefault();
-
-          api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, {
-            x: event.clientX,
-            y: event.clientY,
-          });
-        }}
-      >
-        <div>{children}</div>
-      </ContextMenuTrigger>
-      <ContextMenuContent
-        className="w-64"
-        onCloseAutoFocus={(e) => {
-          e.preventDefault();
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left"
+        onClick={() => {
           editor.getApi(BlockSelectionPlugin).blockSelection.focus();
-
-          if (value === 'askAI') {
-            editor.getApi(AIChatPlugin).aiChat.show();
-          }
-
-          setValue(null);
+          editor.getApi(AIChatPlugin).aiChat.show();
+          setMenuOpen(false);
         }}
       >
-        <ContextMenuGroup>
-          <ContextMenuItem
-            onClick={() => {
-              setValue('askAI');
-            }}
-          >
-            Ask AI
-          </ContextMenuItem>
-          <ContextMenuItem
-            onClick={() => {
-              editor
-                .getTransforms(BlockSelectionPlugin)
-                .blockSelection.removeNodes();
-              editor.tf.focus();
-            }}
-          >
-            Delete
-          </ContextMenuItem>
-          <ContextMenuItem
-            onClick={() => {
-              editor
-                .getTransforms(BlockSelectionPlugin)
-                .blockSelection.duplicate();
-            }}
-          >
-            Duplicate
-            {/* <ContextMenuShortcut>⌘ + D</ContextMenuShortcut> */}
-          </ContextMenuItem>
-          <ContextMenuSub>
-            <ContextMenuSubTrigger>Turn into</ContextMenuSubTrigger>
-            <ContextMenuSubContent className="w-48">
-              <ContextMenuItem onClick={() => handleTurnInto(KEYS.p)}>
-                Paragraph
-              </ContextMenuItem>
-
-              <ContextMenuItem onClick={() => handleTurnInto(KEYS.h1)}>
-                Heading 1
-              </ContextMenuItem>
-              <ContextMenuItem onClick={() => handleTurnInto(KEYS.h2)}>
-                Heading 2
-              </ContextMenuItem>
-              <ContextMenuItem onClick={() => handleTurnInto(KEYS.h3)}>
-                Heading 3
-              </ContextMenuItem>
-              <ContextMenuItem onClick={() => handleTurnInto(KEYS.blockquote)}>
-                Blockquote
-              </ContextMenuItem>
-            </ContextMenuSubContent>
-          </ContextMenuSub>
-        </ContextMenuGroup>
-
-        <ContextMenuGroup>
-          <ContextMenuItem
-            onClick={() =>
-              editor
-                .getTransforms(BlockSelectionPlugin)
-                .blockSelection.setIndent(1)
-            }
-          >
-            Indent
-          </ContextMenuItem>
-          <ContextMenuItem
-            onClick={() =>
-              editor
-                .getTransforms(BlockSelectionPlugin)
-                .blockSelection.setIndent(-1)
-            }
-          >
-            Outdent
-          </ContextMenuItem>
-          <ContextMenuSub>
-            <ContextMenuSubTrigger>Align</ContextMenuSubTrigger>
-            <ContextMenuSubContent className="w-48">
-              <ContextMenuItem onClick={() => handleAlign('left')}>
-                Left
-              </ContextMenuItem>
-              <ContextMenuItem onClick={() => handleAlign('center')}>
-                Center
-              </ContextMenuItem>
-              <ContextMenuItem onClick={() => handleAlign('right')}>
-                Right
-              </ContextMenuItem>
-            </ContextMenuSubContent>
-          </ContextMenuSub>
-        </ContextMenuGroup>
-      </ContextMenuContent>
-    </ContextMenu>
+        Ask AI
+      </button>
+      
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left"
+        onClick={() => {
+          editor.getTransforms(BlockSelectionPlugin).blockSelection.removeNodes();
+          editor.tf.focus();
+          setMenuOpen(false);
+        }}
+      >
+        Delete
+      </button>
+      
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left"
+        onClick={() => {
+          editor.getTransforms(BlockSelectionPlugin).blockSelection.duplicate();
+          setMenuOpen(false);
+        }}
+      >
+        Duplicate
+      </button>
+      
+      <div className="-mx-1 my-1 h-px bg-border" />
+      
+      <div className="px-2 py-1.5 text-sm font-medium">Turn into</div>
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left pl-8"
+        onClick={() => handleTurnInto(KEYS.p)}
+      >
+        Paragraph
+      </button>
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left pl-8"
+        onClick={() => handleTurnInto(KEYS.h1)}
+      >
+        Heading 1
+      </button>
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left pl-8"
+        onClick={() => handleTurnInto(KEYS.h2)}
+      >
+        Heading 2
+      </button>
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left pl-8"
+        onClick={() => handleTurnInto(KEYS.h3)}
+      >
+        Heading 3
+      </button>
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left pl-8"
+        onClick={() => handleTurnInto(KEYS.blockquote)}
+      >
+        Blockquote
+      </button>
+      
+      <div className="-mx-1 my-1 h-px bg-border" />
+      
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left"
+        onClick={() => {
+          editor.getTransforms(BlockSelectionPlugin).blockSelection.setIndent(1);
+          setMenuOpen(false);
+        }}
+      >
+        Indent
+      </button>
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left"
+        onClick={() => {
+          editor.getTransforms(BlockSelectionPlugin).blockSelection.setIndent(-1);
+          setMenuOpen(false);
+        }}
+      >
+        Outdent
+      </button>
+      
+      <div className="-mx-1 my-1 h-px bg-border" />
+      
+      <div className="px-2 py-1.5 text-sm font-medium">Align</div>
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left pl-8"
+        onClick={() => handleAlign('left')}
+      >
+        Left
+      </button>
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left pl-8"
+        onClick={() => handleAlign('center')}
+      >
+        Center
+      </button>
+      <button
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left pl-8"
+        onClick={() => handleAlign('right')}
+      >
+        Right
+      </button>
+    </div>
   );
 }

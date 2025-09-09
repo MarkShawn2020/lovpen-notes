@@ -97,7 +97,7 @@ export default function RenderingWysiwygEditor({
             <Editor 
               placeholder={placeholder}
               variant="none"
-              className="h-full w-full flex-1 px-8 py-2 outline-none"
+              className="h-full w-full flex-1 px-8 py-2 outline-none caret-primary select-text selection:bg-brand/25"
             />
           </EditorContainer>
       </Plate>

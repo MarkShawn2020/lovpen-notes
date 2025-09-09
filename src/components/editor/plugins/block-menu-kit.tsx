@@ -9,6 +9,7 @@ import { BlockSelectionKit } from './block-selection-kit';
 export const BlockMenuKit = [
   ...BlockSelectionKit,
   BlockMenuPlugin.configure({
-    render: { aboveEditable: BlockContextMenu },
+    // Changed from aboveEditable to afterEditable to fix cursor issue
+    render: { afterEditable: BlockContextMenu },
   }),
 ];
