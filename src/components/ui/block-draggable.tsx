@@ -200,18 +200,25 @@ function Gutter({
     'isSelectionAreaVisible'
   );
   const selected = useSelected();
+  
+  // Check if this block contains the current selection/focus
+  // useSelected() should already handle this, but we'll double-check
+  const isFocused = selected;
 
   return (
     <div
       {...props}
       className={cn(
         'slate-gutterLeft',
-        'absolute top-0 z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
-        getPluginByType(editor, element.type)?.node.isContainer
+        'absolute top-0 z-50 flex h-full -translate-x-full cursor-text',
+        // Only show for the focused block or on hover
+        isFocused ? 'opacity-100' : 'opacity-0 hover:opacity-100',
+        // Show on parent hover only if not focused
+        !isFocused && (getPluginByType(editor, element.type)?.node.isContainer
           ? 'group-hover/container:opacity-100'
-          : 'group-hover:opacity-100',
+          : 'group-hover:opacity-100'),
+        // Hide when selection area is visible
         isSelectionAreaVisible && 'hidden',
-        !selected && 'opacity-0',
         className
       )}
       contentEditable={false}
